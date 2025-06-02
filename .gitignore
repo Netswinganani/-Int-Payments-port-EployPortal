@@ -1,0 +1,26 @@
+# Ignore environment files
+*.env
+
+# Node modules folder
+node_modules/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output folders
+dist/
+build/
+
+# Optional: OS generated files
+.DS_Store
+Thumbs.db
+
+# Specific files to ignore
+1748305183342.mermaid
+1748305183342.mermaid
+hashPassword.js
+employee_portal_system_design.md
