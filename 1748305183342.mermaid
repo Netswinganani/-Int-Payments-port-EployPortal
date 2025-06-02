@@ -1,0 +1,142 @@
+classDiagram
+    class User {
+        +id: number
+        +username: string
+        +email: string
+        +password: string
+        +idNumber: string
+        +accountNumber: string
+        +balance: number
+        +isAdmin: boolean
+        +validatePassword(password: string): boolean
+    }
+    
+    class Payment {
+        +id: number
+        +recipient_id: number
+        +amount: number
+        +currency: string
+        +payment_mode: string
+        +reference: string
+        +swift_code: string
+        +provider: string
+        +status: string
+        +is_instant: boolean
+        +fee: number
+        +transaction_date: Date
+        +updated_at: Date
+        +created_at: Date
+        +recipientName: string
+        +recipientAccount: string
+        +swiftCode: string
+        +bankName: string
+        +payment_method: string
+        +userId: number
+    }
+    
+    class AuthService {
+        +login(username: string, password: string): Promise<{token: string, user: User}>
+        +verifyToken(token: string): User|null
+        +logout(): void
+        -generateToken(user: User): string
+        -verifyPassword(plainPassword: string, hashedPassword: string): boolean
+    }
+    
+    class UserService {
+        +getUser(id: number): Promise<User>
+        +createEmployee(userData: object): Promise<User>
+        +updateEmployee(id: number, userData: object): Promise<User>
+        +deleteEmployee(id: number): Promise<boolean>
+        +listEmployees(filters: object): Promise<User[]>
+    }
+    
+    class PaymentService {
+        +getPayments(userId: number, filters: object): Promise<Payment[]>
+        +getPaymentDetails(paymentId: number): Promise<Payment>
+    }
+    
+    class AuthController {
+        -authService: AuthService
+        +login(req: Request, res: Response): Response
+        +logout(req: Request, res: Response): Response
+    }
+    
+    class AdminController {
+        -userService: UserService
+        +createEmployee(req: Request, res: Response): Response
+        +updateEmployee(req: Request, res: Response): Response
+        +deleteEmployee(req: Request, res: Response): Response
+        +listEmployees(req: Request, res: Response): Response
+    }
+    
+    class EmployeeController {
+        -userService: UserService
+        -paymentService: PaymentService
+        +getCurrentEmployee(req: Request, res: Response): Response
+        +getEmployeePayments(req: Request, res: Response): Response
+        +getPaymentDetails(req: Request, res: Response): Response
+    }
+    
+    class AuthMiddleware {
+        -authService: AuthService
+        +authenticate(req: Request, res: Response, next: Function): void
+        +requireAdmin(req: Request, res: Response, next: Function): void
+    }
+    
+    class ValidationMiddleware {
+        +validateLogin(req: Request, res: Response, next: Function): void
+        +validateEmployeeData(req: Request, res: Response, next: Function): void
+        +validatePaymentFilters(req: Request, res: Response, next: Function): void
+    }
+    
+    class SecurityUtils {
+        +generateCSRFToken(): string
+        +validateCSRFToken(token: string): boolean
+        +sanitizeInput(input: string): string
+        +hashPassword(password: string): Promise<string>
+    }
+    
+    class DatabaseService {
+        +connect(): Promise<void>
+        +query(sql: string, params: any[]): Promise<any>
+        +transaction(callback: Function): Promise<any>
+    }
+    
+    class ApiClient {
+        -baseURL: string
+        -authToken: string
+        +setAuthToken(token: string): void
+        +clearAuthToken(): void
+        +get(endpoint: string, params: object): Promise<any>
+        +post(endpoint: string, data: object): Promise<any>
+        +put(endpoint: string, data: object): Promise<any>
+        +delete(endpoint: string): Promise<any>
+    }
+    
+    class LoginPage {
+        -authService: ApiClient
+        +state: {username: string, password: string, error: string}
+        +handleLogin(): void
+        +render(): ReactComponent
+    }
+    
+    class DashboardPage {
+        -apiClient: ApiClient
+        +state: {userData: User, payments: Payment[], loading: boolean}
+        +componentDidMount(): void
+        +fetchPayments(filters: object): void
+        +logout(): void
+        +render(): ReactComponent
+    }
+    
+    User "1" -- "many" Payment : has
+    AuthController --> AuthService : uses
+    AdminController --> UserService : uses
+    EmployeeController --> UserService : uses
+    EmployeeController --> PaymentService : uses
+    AuthService --> SecurityUtils : uses
+    UserService --> DatabaseService : uses
+    PaymentService --> DatabaseService : uses
+    AuthMiddleware --> AuthService : uses
+    LoginPage --> ApiClient : uses
+    DashboardPage --> ApiClient : uses
